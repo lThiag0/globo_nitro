@@ -39,7 +39,8 @@ class HomePage extends StatelessWidget {
                           width: 300,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Ação do primeiro botão
+                              // Ação do botão
+                              Navigator.pushNamed(context, '/produtos');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(
@@ -78,7 +79,7 @@ class HomePage extends StatelessWidget {
                               minimumSize: Size(double.infinity, 50),
                             ),
                             child: Text(
-                              'Ver Relatórios',
+                              'Fazer Relatório',
                               style: TextStyle(
                                 //fontSize: 14,
                                 color: Colors.white,
