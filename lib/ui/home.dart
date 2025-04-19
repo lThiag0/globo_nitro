@@ -5,6 +5,11 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        //title: Text('Home', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color.fromARGB(255, 20, 121, 189),
+        elevation: 0,
+      ),
       body: Stack(
         children: [
           // Onda no topo
@@ -14,7 +19,7 @@ class HomePage extends StatelessWidget {
             right: 0,
             height: 100,
             child: Image.asset(
-              'assets/image/ondaDebaixo.png',
+              'assets/image/ondaDeBaixo.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -52,7 +57,7 @@ class HomePage extends StatelessWidget {
                               minimumSize: Size(double.infinity, 50),
                             ),
                             child: Text(
-                              'Scannear produto',
+                              'Escanear produto',
                               style: TextStyle(
                                 //fontSize: 14,
                                 color: Colors.white,

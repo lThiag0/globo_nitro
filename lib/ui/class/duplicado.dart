@@ -16,16 +16,34 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
   void initState() {
     super.initState();
 
-    // Listener para adicionar vírgula automaticamente
+    // Preenche o TextField apenas com os códigos formatados
+    if (etiquetasDuplicadasList.isNotEmpty) {
+      final textoInicial = etiquetasDuplicadasList
+          .map((codigo) => codigo.trim())
+          .where((c) => c.isNotEmpty)
+          .join(',\n');
+
+      codigoController.text = textoInicial;
+      codigoController.selection = TextSelection.fromPosition(
+        TextPosition(offset: codigoController.text.length),
+      );
+    }
+
+    // Só agora adiciona o listener
     codigoController.addListener(() {
       final texto = codigoController.text;
 
-      // Se não estiver vazio e não terminar com vírgula, adiciona uma
-      if (texto.isNotEmpty && !texto.endsWith(',')) {
-        codigoController.text = '$texto,';
-        codigoController.selection = TextSelection.fromPosition(
-          TextPosition(offset: codigoController.text.length),
-        );
+      // Evita múltiplas vírgulas ou quebras de linha desnecessárias
+      if (texto.isNotEmpty && !texto.endsWith(',\n')) {
+        final novoTexto = '${texto.trimRight()},\n';
+
+        // Evita atualizar se já estiver igual
+        if (texto != novoTexto) {
+          codigoController.text = novoTexto;
+          codigoController.selection = TextSelection.fromPosition(
+            TextPosition(offset: codigoController.text.length),
+          );
+        }
       }
     });
   }
@@ -38,25 +56,29 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
   }
 
   void salvarCodigo() {
-    final textoCompleto = codigoController.text;
-    // Separa os códigos por vírgula e remove espaços
+    final textoCompleto = codigoController.text.trim();
+
+    // Remove quebras de linha duplas ou finais
+    final textoLimpo = textoCompleto.replaceAll(RegExp(r',\s*\n'), ',\n');
+
     List<String> codigos =
-        textoCompleto
+        textoLimpo
             .split(',')
             .map((c) => c.trim())
             .where((c) => c.isNotEmpty)
             .toList();
 
     setState(() {
-      etiquetasDuplicadasList.addAll(codigos);
+      etiquetasDuplicadasList.addAll(
+        codigos.where((c) => !etiquetasDuplicadasList.contains(c)),
+      );
     });
-
-    // Limpa o campo após salvar
-    //codigoController.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${codigos.length} código(s) salvo(s)!')),
     );
+
+    Navigator.pop(context);
   }
 
   @override
@@ -84,7 +106,7 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
             right: 0,
             height: 100,
             child: Image.asset(
-              'assets/image/ondaDebaixo.png',
+              'assets/image/ondaDeBaixo.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -153,29 +175,55 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
 
                   SizedBox(height: 15),
 
-                  // Botão "Salvar" centralizado
-                  SizedBox(
-                    width: 355,
-                    child: ElevatedButton.icon(
-                      onPressed: salvarCodigo,
-                      icon: Icon(Icons.save, color: Colors.white),
-                      label: Text(
-                        'Salvar',
-                        style: TextStyle(
-                          //fontSize: 14,
-                          color: Colors.white,
+                  // |Botoes de salvar e limpa
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 165,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            codigoController.clear();
+                            etiquetasDuplicadasList.clear();
+                          },
+                          icon: Icon(Icons.clear, color: Colors.white),
+                          label: Text(
+                            'Limpar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              247,
+                              65,
+                              65,
+                            ),
+                            minimumSize: Size(double.infinity, 50),
+                          ),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          20,
-                          121,
-                          189,
+                      SizedBox(width: 20),
+                      SizedBox(
+                        width: 165,
+                        child: ElevatedButton.icon(
+                          onPressed: salvarCodigo,
+                          icon: Icon(Icons.save, color: Colors.white),
+                          label: Text(
+                            'Salvar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              20,
+                              121,
+                              189,
+                            ),
+                            minimumSize: Size(double.infinity, 50),
+                          ),
                         ),
-                        minimumSize: Size(double.infinity, 50),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),

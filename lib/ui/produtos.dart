@@ -11,49 +11,116 @@ class ProdutosPage extends StatefulWidget {
 
 class _ProdutosPageState extends State<ProdutosPage> {
   void gerarEtiquetas() {
-    final numero = numeroController.text.trim();
+    try {
+      if (etiquetasBrancasList.isEmpty &&
+          etiquetasAmarelasList.isEmpty &&
+          etiquetasDuplicadasList.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nenhuma etiqueta escaneada para gerar.')),
+        );
+        return;
+      }
 
-    if (etiquetasBrancasList.isEmpty ||
-        etiquetasAmarelasList.isEmpty ||
-        etiquetasDuplicadasList.isEmpty) {
+      final numero = numeroController.text.trim();
+      final buffer = StringBuffer();
+
+      buffer.writeln('Relatório de Etiquetas Nitro:');
+      buffer.writeln('\n');
+      // If de etiquetas Brancas
+      if (etiquetasBrancasList.isNotEmpty) {
+        buffer.writeln('Códigos de etiquetas Brancas:');
+        for (var codigo in etiquetasBrancasList) {
+          buffer.writeln('$codigo,');
+        }
+        //conteudo.writeln('\n');
+        buffer.writeln('\n');
+      }
+      // If de etiquetas Amarelas
+      if (etiquetasAmarelasList.isNotEmpty) {
+        buffer.writeln('Códigos de etiquetas Amarelas:');
+        for (var codigo in etiquetasAmarelasList) {
+          buffer.writeln('$codigo,');
+        }
+        //conteudo.writeln('\n');
+        buffer.writeln('\n');
+      }
+      // If de etiquetas Duplicadas
+      if (etiquetasDuplicadasList.isNotEmpty) {
+        buffer.writeln('Códigos de etiquetas Duplicadas:');
+        buffer.writeln('Número para duplica: $numero');
+        buffer.writeln('\n');
+        for (var codigo in etiquetasDuplicadasList) {
+          buffer.writeln('$codigo,');
+        }
+      }
+
+      final textoFinal = buffer.toString();
+
+      // Compartilhar usando o share_plus
+      Share.share(textoFinal);
+    } catch (e, stackTrace) {
+      debugPrint('Erro ao gerar etiquetas: $e');
+      debugPrint(stackTrace.toString());
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Escaneie ao menos 1 código de produto!')),
+        SnackBar(content: Text('Erro ao gerar as etiquetas. Tente novamente.')),
       );
-      return;
     }
+  }
 
-    final conteudo = StringBuffer();
-    conteudo.writeln('Relatório de Etiquetas Nitro:');
+  @override
+  void initState() {
+    super.initState();
 
-    // If de etiquetas Brancas
-    if (etiquetasBrancasList.isNotEmpty) {
-      conteudo.writeln('Códigos escaneados de etiquetas Brancas:');
-      for (var codigo in etiquetasBrancasList) {
-        conteudo.writeln(codigo);
-      }
-      conteudo.writeln('\n');
-      conteudo.writeln('\n');
-    }
-    // If de etiquetas Brancas
-    if (etiquetasAmarelasList.isNotEmpty) {
-      conteudo.writeln('Códigos escaneados de etiquetas Amarelas:');
-      for (var codigo in etiquetasAmarelasList) {
-        conteudo.writeln(codigo);
-      }
-      conteudo.writeln('\n');
-      conteudo.writeln('\n');
-    }
-    // If de etiquetas Brancas
-    if (etiquetasDuplicadasList.isNotEmpty) {
-      conteudo.writeln('Códigos escaneados de etiquetas Duplicadas:');
-      for (var codigo in etiquetasDuplicadasList) {
-        conteudo.writeln('Número para duplica: $numero');
-        conteudo.writeln('----------------------------');
-        conteudo.writeln(codigo);
-      }
-    }
+    // Aguarda o frame inicial renderizar antes de mostrar o diálogo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _verificarEtiquetasSalvas();
+    });
+  }
 
-    Share.share(conteudo.toString());
+  void _verificarEtiquetasSalvas() {
+    // Verifica se há códigos nas listas de etiquetas
+    if (etiquetasBrancasList.isNotEmpty ||
+        etiquetasAmarelasList.isNotEmpty ||
+        etiquetasDuplicadasList.isNotEmpty) {
+      // Exibe um diálogo perguntando ao usuário o que deseja fazer
+      _mostrarDialogo();
+    }
+  }
+
+  void _mostrarDialogo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Códigos Escaneados salvos'),
+          content: Text(
+            'Há códigos escaneados salvos. Deseja continuar com esses códigos ou limpar?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // Limpar as listas de etiquetas
+                setState(() {
+                  etiquetasBrancasList.clear();
+                  etiquetasAmarelasList.clear();
+                  etiquetasDuplicadasList.clear();
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Limpar Códigos'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Apenas fecha o diálogo e mantém os códigos salvos
+                Navigator.of(context).pop();
+              },
+              child: Text('Continuar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -61,7 +128,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Produtos', style: TextStyle(color: Colors.white)),
+        title: Text('Etiquetas', style: TextStyle(color: Colors.white)),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -78,7 +145,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
             right: 0,
             height: 100,
             child: Image.asset(
-              'assets/image/ondaDebaixo.png',
+              'assets/image/ondaDeBaixo.png',
               fit: BoxFit.cover,
             ),
           ),
