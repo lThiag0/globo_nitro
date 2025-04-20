@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:globo_nitro/ui/class/scancamera.dart';
 
 final List<String> etiquetasAmarelasList = [];
 
@@ -136,7 +137,63 @@ class _etiquetaAmarelaPageState extends State<etiquetaAmarelaPage> {
                     textAlign: TextAlign.center,
                   ),
 
-                  SizedBox(height: 30),
+                  SizedBox(height: 20),
+                  // Escanear pela camera do celular
+                  SizedBox(
+                    width: 350,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final codigosEscaneados =
+                            await Navigator.push<List<String>>(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ScannerPage(), // sem callback
+                              ),
+                            );
+
+                        if (codigosEscaneados != null &&
+                            codigosEscaneados.isNotEmpty) {
+                          setState(() {
+                            for (var codigo in codigosEscaneados) {
+                              if (!etiquetasAmarelasList.contains(codigo)) {
+                                //etiquetasAmarelasList.add(codigo);
+                                final textoAtual =
+                                    codigoController.text.trimRight();
+                                final novoTexto =
+                                    textoAtual.isEmpty
+                                        ? '$codigo,\n'
+                                        : '$textoAtual\n$codigo,\n';
+                                codigoController.text = novoTexto;
+                                codigoController
+                                    .selection = TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: codigoController.text.length,
+                                  ),
+                                );
+                              }
+                            }
+                          });
+                        }
+                      },
+                      icon: Icon(Icons.qr_code_scanner, color: Colors.white),
+                      label: Text(
+                        'Escanear pela câmera',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          20,
+                          121,
+                          189,
+                        ),
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 15),
 
                   // Campo de texto grande
                   SizedBox(
@@ -153,13 +210,11 @@ class _etiquetaAmarelaPageState extends State<etiquetaAmarelaPage> {
                     ),
                   ),
 
-                  SizedBox(height: 30),
+                  SizedBox(height: 10),
                   // |Botoes de salvar e limpa
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 165,
+                      Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
                             codigoController.clear();
@@ -171,19 +226,13 @@ class _etiquetaAmarelaPageState extends State<etiquetaAmarelaPage> {
                             style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              247,
-                              65,
-                              65,
-                            ),
+                            backgroundColor: Color.fromARGB(255, 247, 65, 65),
                             minimumSize: Size(double.infinity, 50),
                           ),
                         ),
                       ),
                       SizedBox(width: 20),
-                      SizedBox(
-                        width: 165,
+                      Expanded(
                         child: ElevatedButton.icon(
                           onPressed: salvarCodigo,
                           icon: Icon(Icons.save, color: Colors.white),
@@ -192,12 +241,7 @@ class _etiquetaAmarelaPageState extends State<etiquetaAmarelaPage> {
                             style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              20,
-                              121,
-                              189,
-                            ),
+                            backgroundColor: Color.fromARGB(255, 20, 121, 189),
                             minimumSize: Size(double.infinity, 50),
                           ),
                         ),

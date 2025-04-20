@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+//import 'package:globo_nitro/ui/class/gerais.dart';
+import 'package:globo_nitro/ui/class/scancamera.dart';
 
 final TextEditingController numeroController = TextEditingController();
 final List<String> etiquetasDuplicadasList = [];
@@ -24,6 +26,7 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
           .join(',\n');
 
       codigoController.text = textoInicial;
+      //codigoController.text = formatarCodigosEAN(codigoController.text);
       codigoController.selection = TextSelection.fromPosition(
         TextPosition(offset: codigoController.text.length),
       );
@@ -51,12 +54,24 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
   @override
   void dispose() {
     codigoController.dispose();
-    numeroController.dispose();
+    //numeroController.dispose();
     super.dispose();
   }
 
   void salvarCodigo() {
     final textoCompleto = codigoController.text.trim();
+    final quantidade = int.tryParse(numeroController.text.trim());
+
+    if (quantidade == null || quantidade <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Por favor, informe uma quantidade válida para duplicar.',
+          ),
+        ),
+      );
+      return;
+    }
 
     // Remove quebras de linha duplas ou finais
     final textoLimpo = textoCompleto.replaceAll(RegExp(r',\s*\n'), ',\n');
@@ -140,6 +155,62 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
                   ),
 
                   SizedBox(height: 20),
+                  // Escanear pela camera do celular
+                  SizedBox(
+                    width: 350,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final codigosEscaneados =
+                            await Navigator.push<List<String>>(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ScannerPage(), // sem callback
+                              ),
+                            );
+
+                        if (codigosEscaneados != null &&
+                            codigosEscaneados.isNotEmpty) {
+                          setState(() {
+                            for (var codigo in codigosEscaneados) {
+                              if (!etiquetasDuplicadasList.contains(codigo)) {
+                                //etiquetasDuplicadasList.add(codigo);
+                                final textoAtual =
+                                    codigoController.text.trimRight();
+                                final novoTexto =
+                                    textoAtual.isEmpty
+                                        ? '$codigo,\n'
+                                        : '$textoAtual\n$codigo,\n';
+                                codigoController.text = novoTexto;
+                                codigoController
+                                    .selection = TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: codigoController.text.length,
+                                  ),
+                                );
+                              }
+                            }
+                          });
+                        }
+                      },
+                      icon: Icon(Icons.qr_code_scanner, color: Colors.white),
+                      label: Text(
+                        'Escanear pela câmera',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          20,
+                          121,
+                          189,
+                        ),
+                        minimumSize: Size(double.infinity, 50),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 15),
 
                   SizedBox(
                     width: 350,
@@ -163,7 +234,7 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
                     width: 350,
                     child: TextField(
                       controller: codigoController,
-                      maxLines: 10,
+                      maxLines: 7,
                       decoration: InputDecoration(
                         hintText: 'Código de barras...',
                         border: OutlineInputBorder(),
@@ -173,14 +244,12 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
                     ),
                   ),
 
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
 
                   // |Botoes de salvar e limpa
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 165,
+                      Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
                             codigoController.clear();
@@ -192,19 +261,13 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
                             style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              247,
-                              65,
-                              65,
-                            ),
+                            backgroundColor: Color.fromARGB(255, 247, 65, 65),
                             minimumSize: Size(double.infinity, 50),
                           ),
                         ),
                       ),
                       SizedBox(width: 20),
-                      SizedBox(
-                        width: 165,
+                      Expanded(
                         child: ElevatedButton.icon(
                           onPressed: salvarCodigo,
                           icon: Icon(Icons.save, color: Colors.white),
@@ -213,12 +276,7 @@ class _etiquetaDuplicadoPageState extends State<etiquetaDuplicadoPage> {
                             style: TextStyle(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              20,
-                              121,
-                              189,
-                            ),
+                            backgroundColor: Color.fromARGB(255, 20, 121, 189),
                             minimumSize: Size(double.infinity, 50),
                           ),
                         ),
