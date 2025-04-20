@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +75,7 @@ class HomePage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () {
                               // Ação do segundo botão
+                              Navigator.pushNamed(context, '/estoque');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(
@@ -84,7 +87,34 @@ class HomePage extends StatelessWidget {
                               minimumSize: Size(double.infinity, 50),
                             ),
                             child: Text(
-                              'Fazer Relatório',
+                              'Conferir Estoque',
+                              style: TextStyle(
+                                //fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        // Botão 3
+                        SizedBox(
+                          width: 300,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Ação do segundo botão
+                              Navigator.pushNamed(context, '/info');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                20,
+                                121,
+                                189,
+                              ),
+                              minimumSize: Size(double.infinity, 50),
+                            ),
+                            child: Text(
+                              'Informações do Aplicativo',
                               style: TextStyle(
                                 //fontSize: 14,
                                 color: Colors.white,
@@ -101,7 +131,7 @@ class HomePage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 150.0),
                 child: Text(
-                  'Criado por Thiago Araujo - Matricula 6099',
+                  'Criado por Thiago Araujo - Matrícula 6099',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ),

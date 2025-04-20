@@ -3,19 +3,23 @@ import 'package:globo_nitro/ui/class/scancamera.dart';
 
 final List<String> etiquetasBrancasList = [];
 
-class etiquetaBrancaPage extends StatefulWidget {
+class EtiquetaBrancaPage extends StatefulWidget {
+  const EtiquetaBrancaPage({super.key});
+
   @override
-  _etiquetaBrancaPageState createState() => _etiquetaBrancaPageState();
+  // ignore: library_private_types_in_public_api
+  _EtiquetaBrancaPageState createState() => _EtiquetaBrancaPageState();
 }
 
-class _etiquetaBrancaPageState extends State<etiquetaBrancaPage> {
+class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
   final TextEditingController codigoController = TextEditingController();
+
+  bool _isAtualizandoTexto = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Preenche o TextField apenas com os códigos formatados
     if (etiquetasBrancasList.isNotEmpty) {
       final textoInicial = etiquetasBrancasList
           .map((codigo) => codigo.trim())
@@ -28,21 +32,27 @@ class _etiquetaBrancaPageState extends State<etiquetaBrancaPage> {
       );
     }
 
-    // Só agora adiciona o listener
     codigoController.addListener(() {
-      final texto = codigoController.text;
+      if (_isAtualizandoTexto) return;
 
-      // Evita múltiplas vírgulas ou quebras de linha desnecessárias
-      if (texto.isNotEmpty && !texto.endsWith(',\n')) {
-        final novoTexto = '${texto.trimRight()},\n';
+      String texto = codigoController.text;
 
-        // Evita atualizar se já estiver igual
-        if (texto != novoTexto) {
-          codigoController.text = novoTexto;
+      // Se o usuário apagou, não força vírgula
+      if (texto.isEmpty) return;
+
+      // Verifica se ele está digitando e não usando backspace
+      if (!texto.endsWith(',\n')) {
+        _isAtualizandoTexto = true;
+
+        // Verifica se a última letra é um número ou letra antes de aplicar o ",\n"
+        if (RegExp(r'[a-zA-Z0-9]$').hasMatch(texto)) {
+          codigoController.text = '$texto,\n';
           codigoController.selection = TextSelection.fromPosition(
             TextPosition(offset: codigoController.text.length),
           );
         }
+
+        _isAtualizandoTexto = false;
       }
     });
   }

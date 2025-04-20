@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   share_plus: ^7.2.0
-  mobile_scanner: ^3.5.1
+  mobile_scanner: ^5.2.3
   audioplayers: ^5.2.1
 
   # The following adds the Cupertino Icons font to your application.
@@ -48,6 +48,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+  url_launcher: ^6.2.4
+
+flutter_icons:  # 👈 Configuração dos ícones
+  android: true
+  ios: true
+  image_path: "assets/image/globonitroicon.png"
+  color: "#3F51B5"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

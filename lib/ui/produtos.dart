@@ -5,7 +5,10 @@ import 'package:globo_nitro/ui/class/duplicado.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProdutosPage extends StatefulWidget {
+  const ProdutosPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _ProdutosPageState createState() => _ProdutosPageState();
 }
 
@@ -105,6 +108,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                   etiquetasBrancasList.clear();
                   etiquetasAmarelasList.clear();
                   etiquetasDuplicadasList.clear();
+                  numeroController.clear();
                 });
                 Navigator.of(context).pop();
               },
@@ -185,7 +189,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => etiquetaBrancaPage(),
+                            builder: (context) => EtiquetaBrancaPage(),
                           ),
                         );
                       },
@@ -219,7 +223,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => etiquetaAmarelaPage(),
+                            builder: (context) => EtiquetaAmarelaPage(),
                           ),
                         );
                       },
@@ -253,7 +257,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => etiquetaDuplicadoPage(),
+                            builder: (context) => EtiquetaDuplicadoPage(),
                           ),
                         );
                       },

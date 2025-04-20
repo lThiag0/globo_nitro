@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
     <application
-        android:label="globo_nitro"
+        android:label="Nitro"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
