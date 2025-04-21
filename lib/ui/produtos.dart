@@ -33,7 +33,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
       if (etiquetasBrancasList.isNotEmpty) {
         buffer.writeln('Códigos de etiquetas Brancas:');
         for (var codigo in etiquetasBrancasList) {
-          buffer.writeln('$codigo,');
+          buffer.writeln(codigo);
         }
         //conteudo.writeln('\n');
         buffer.writeln('\n');
@@ -42,7 +42,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
       if (etiquetasAmarelasList.isNotEmpty) {
         buffer.writeln('Códigos de etiquetas Amarelas:');
         for (var codigo in etiquetasAmarelasList) {
-          buffer.writeln('$codigo,');
+          buffer.writeln(codigo);
         }
         //conteudo.writeln('\n');
         buffer.writeln('\n');
@@ -53,7 +53,7 @@ class _ProdutosPageState extends State<ProdutosPage> {
         buffer.writeln('Número para duplica: $numero');
         buffer.writeln('\n');
         for (var codigo in etiquetasDuplicadasList) {
-          buffer.writeln('$codigo,');
+          buffer.writeln(codigo);
         }
       }
 

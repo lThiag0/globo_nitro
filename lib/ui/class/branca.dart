@@ -13,8 +13,7 @@ class EtiquetaBrancaPage extends StatefulWidget {
 
 class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
   final TextEditingController codigoController = TextEditingController();
-
-  bool _isAtualizandoTexto = false;
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -24,7 +23,7 @@ class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
       final textoInicial = etiquetasBrancasList
           .map((codigo) => codigo.trim())
           .where((c) => c.isNotEmpty)
-          .join(',\n');
+          .join('\n');
 
       codigoController.text = textoInicial;
       codigoController.selection = TextSelection.fromPosition(
@@ -32,61 +31,67 @@ class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
       );
     }
 
-    codigoController.addListener(() {
-      if (_isAtualizandoTexto) return;
-
-      String texto = codigoController.text;
-
-      // Se o usuário apagou, não força vírgula
-      if (texto.isEmpty) return;
-
-      // Verifica se ele está digitando e não usando backspace
-      if (!texto.endsWith(',\n')) {
-        _isAtualizandoTexto = true;
-
-        // Verifica se a última letra é um número ou letra antes de aplicar o ",\n"
-        if (RegExp(r'[a-zA-Z0-9]$').hasMatch(texto)) {
-          codigoController.text = '$texto,\n';
-          codigoController.selection = TextSelection.fromPosition(
-            TextPosition(offset: codigoController.text.length),
-          );
-        }
-
-        _isAtualizandoTexto = false;
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        // Quando o campo é clicado, mover o cursor para a última linha
+        _moverCursorParaUltimaLinha();
       }
     });
+  }
+
+  // Função para mover o cursor para a última linha
+  void _moverCursorParaUltimaLinha() {
+    final textoAtual = codigoController.text;
+    if (textoAtual.isNotEmpty && !textoAtual.endsWith('\n')) {
+      // Se o texto não terminar com uma linha em branco, adicionar uma
+      codigoController.text = '$textoAtual\n';
+    }
+    // Mover o cursor para o final do texto
+    codigoController.selection = TextSelection.fromPosition(
+      TextPosition(offset: codigoController.text.length),
+    );
+  }
+
+  void salvarCodigo() {
+    if (codigoController.text.isNotEmpty) {
+      // Limpar a lista de códigos após salvar (com ou sem duplicados)
+      etiquetasBrancasList.clear();
+      // Adiciona os códigos à lista
+      final novosCodigos = codigoController.text.split('\n');
+
+      // Adiciona a vírgula ao final de cada código, se ainda não tiver
+      for (var codigo in novosCodigos) {
+        String codigoFormatado = codigo.trim();
+        if (codigoFormatado.isNotEmpty &&
+            !etiquetasBrancasList.contains('$codigoFormatado,')) {
+          if (!codigoFormatado.endsWith(',')) {
+            codigoFormatado += ',';
+          }
+          etiquetasBrancasList.add(codigoFormatado);
+        }
+      }
+
+      // Atualiza a UI
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${etiquetasBrancasList.length} código(s) salvo(s)!'),
+        ),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Não foi encontrado nem um codigo escaneado!')),
+      );
+    }
   }
 
   @override
   void dispose() {
     codigoController.dispose();
     super.dispose();
-  }
-
-  void salvarCodigo() {
-    final textoCompleto = codigoController.text.trim();
-
-    // Remove quebras de linha duplas ou finais
-    final textoLimpo = textoCompleto.replaceAll(RegExp(r',\s*\n'), ',\n');
-
-    List<String> codigos =
-        textoLimpo
-            .split(',')
-            .map((c) => c.trim())
-            .where((c) => c.isNotEmpty)
-            .toList();
-
-    setState(() {
-      etiquetasBrancasList.addAll(
-        codigos.where((c) => !etiquetasBrancasList.contains(c)),
-      );
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${codigos.length} código(s) salvo(s)!')),
-    );
-
-    Navigator.pop(context);
   }
 
   @override
@@ -207,6 +212,7 @@ class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
                     width: 350,
                     child: TextField(
                       controller: codigoController,
+                      focusNode: focusNode,
                       maxLines: 10,
                       decoration: InputDecoration(
                         hintText: 'Código de barras...',

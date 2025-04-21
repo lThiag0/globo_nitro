@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:globo_nitro/ui/class/gerais.dart';
 import 'package:globo_nitro/ui/class/scancamera.dart';
 
 final TextEditingController numeroController = TextEditingController();
@@ -16,8 +15,7 @@ class EtiquetaDuplicadoPage extends StatefulWidget {
 
 class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
   final TextEditingController codigoController = TextEditingController();
-
-  bool _isAtualizandoTexto = false;
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -27,7 +25,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
       final textoInicial = etiquetasDuplicadasList
           .map((codigo) => codigo.trim())
           .where((c) => c.isNotEmpty)
-          .join(',\n');
+          .join('\n');
 
       codigoController.text = textoInicial;
       codigoController.selection = TextSelection.fromPosition(
@@ -35,74 +33,73 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
       );
     }
 
-    codigoController.addListener(() {
-      if (_isAtualizandoTexto) return;
-
-      String texto = codigoController.text;
-
-      // Se o usuário apagou, não força vírgula
-      if (texto.isEmpty) return;
-
-      // Verifica se ele está digitando e não usando backspace
-      if (!texto.endsWith(',\n')) {
-        _isAtualizandoTexto = true;
-
-        // Verifica se a última letra é um número ou letra antes de aplicar o ",\n"
-        if (RegExp(r'[a-zA-Z0-9]$').hasMatch(texto)) {
-          codigoController.text = '$texto,\n';
-          codigoController.selection = TextSelection.fromPosition(
-            TextPosition(offset: codigoController.text.length),
-          );
-        }
-
-        _isAtualizandoTexto = false;
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        // Quando o campo é clicado, mover o cursor para a última linha
+        _moverCursorParaUltimaLinha();
       }
     });
+  }
+
+  // Função para mover o cursor para a última linha
+  void _moverCursorParaUltimaLinha() {
+    final textoAtual = codigoController.text;
+    if (textoAtual.isNotEmpty && !textoAtual.endsWith('\n')) {
+      // Se o texto não terminar com uma linha em branco, adicionar uma
+      codigoController.text = '$textoAtual\n';
+    }
+    // Mover o cursor para o final do texto
+    codigoController.selection = TextSelection.fromPosition(
+      TextPosition(offset: codigoController.text.length),
+    );
+  }
+
+  void salvarCodigo() {
+    if (codigoController.text.isNotEmpty && numeroController.text.isNotEmpty) {
+      // Limpar a lista de códigos após salvar (com ou sem duplicados)
+      etiquetasDuplicadasList.clear();
+      // Adiciona os códigos à lista
+      final novosCodigos = codigoController.text.split('\n');
+
+      // Adiciona a vírgula ao final de cada código, se ainda não tiver
+      for (var codigo in novosCodigos) {
+        String codigoFormatado = codigo.trim();
+        if (codigoFormatado.isNotEmpty &&
+            !etiquetasDuplicadasList.contains('$codigoFormatado,')) {
+          if (!codigoFormatado.endsWith(',')) {
+            codigoFormatado += ',';
+          }
+          etiquetasDuplicadasList.add(codigoFormatado);
+        }
+      }
+
+      // Atualiza a UI
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${etiquetasDuplicadasList.length} código(s) salvo(s)!',
+          ),
+        ),
+      );
+
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Não foi encontrado nem um codigo escaneado ou quantidade para duplicar!',
+          ),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
     codigoController.dispose();
-    //numeroController.dispose();
     super.dispose();
-  }
-
-  void salvarCodigo() {
-    final textoCompleto = codigoController.text.trim();
-    final quantidade = int.tryParse(numeroController.text.trim());
-
-    if (quantidade == null || quantidade <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Por favor, informe uma quantidade válida para duplicar.',
-          ),
-        ),
-      );
-      return;
-    }
-
-    // Remove quebras de linha duplas ou finais
-    final textoLimpo = textoCompleto.replaceAll(RegExp(r',\s*\n'), ',\n');
-
-    List<String> codigos =
-        textoLimpo
-            .split(',')
-            .map((c) => c.trim())
-            .where((c) => c.isNotEmpty)
-            .toList();
-
-    setState(() {
-      etiquetasDuplicadasList.addAll(
-        codigos.where((c) => !etiquetasDuplicadasList.contains(c)),
-      );
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${codigos.length} código(s) salvo(s)!')),
-    );
-
-    Navigator.pop(context);
   }
 
   @override
@@ -123,7 +120,6 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
       ),
       body: Stack(
         children: [
-          // Onda no topo
           Positioned(
             top: 0,
             left: 0,
@@ -134,8 +130,6 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Onda na parte de baixo
           Positioned(
             bottom: 0,
             left: 0,
@@ -146,8 +140,6 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Conteúdo principal
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
@@ -162,9 +154,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
-
                   SizedBox(height: 20),
-                  // Escanear pela camera do celular
                   SizedBox(
                     width: 350,
                     child: ElevatedButton.icon(
@@ -183,7 +173,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                           setState(() {
                             for (var codigo in codigosEscaneados) {
                               if (!etiquetasDuplicadasList.contains(codigo)) {
-                                //etiquetasDuplicadasList.add(codigo);
+                                //etiquetasBrancasList.add(codigo);
                                 final textoAtual =
                                     codigoController.text.trimRight();
                                 final novoTexto =
@@ -218,9 +208,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 15),
-
                   SizedBox(
                     width: 350,
                     child: TextField(
@@ -235,14 +223,12 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 10),
-
-                  // Campo de texto grande
                   SizedBox(
                     width: 350,
                     child: TextField(
                       controller: codigoController,
+                      focusNode: focusNode,
                       maxLines: 7,
                       decoration: InputDecoration(
                         hintText: 'Código de barras...',
@@ -252,10 +238,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 10),
-
-                  // |Botoes de salvar e limpa
                   Row(
                     children: [
                       Expanded(
