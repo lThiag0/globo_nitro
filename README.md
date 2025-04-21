@@ -29,7 +29,7 @@
   <img src="assets/screenshots/etiquetas.png" alt="Etiquetas" width="200"/>
   <img src="assets/screenshots/estoque.png" alt="Tela de Conferência de Estoque" width="200"/>
   <br/>
-  <em>Telas: Home • Scanner de Codigo EAN • Etiquetas • Conferência de Estoque</em>
+  <em>Telas: Home       •       Scanner de Codigo EAN       •       Etiquetas       •       Conferência de Estoque</em>
 </p>
 
 ---
