@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+class ConferenciaItem {
+  final String item;
+  final int quantity;
+
+  ConferenciaItem({required this.item, required this.quantity});
+}
+
 class StockCheckScreen extends StatefulWidget {
   const StockCheckScreen({super.key});
 
@@ -12,12 +19,12 @@ class StockCheckScreen extends StatefulWidget {
 class _StockCheckScreenState extends State<StockCheckScreen> {
   final TextEditingController _itemController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
-  final List<Map<String, dynamic>> _conferencias = [];
-  int? _editingIndex; // Para armazenar o índice do item que está sendo editado
+  final List<ConferenciaItem> _conferencias = [];
+  int? _editingIndex;
 
   // Função para adicionar ou editar item
   void _addOrEditItem() {
-    final String item = _itemController.text;
+    final String item = _itemController.text.trim();
     final String quantityText = _quantityController.text;
 
     if (item.isEmpty || quantityText.isEmpty) {
@@ -37,16 +44,16 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
 
     setState(() {
       if (_editingIndex != null) {
-        // Se estamos editando, atualizamos o item existente
-        _conferencias[_editingIndex!] = {'item': item, 'quantity': quantity};
-        _editingIndex = null; // Limpa o índice de edição
+        _conferencias[_editingIndex!] = ConferenciaItem(
+          item: item,
+          quantity: quantity,
+        );
+        _editingIndex = null;
       } else {
-        // Se estamos adicionando um novo item
-        _conferencias.add({'item': item, 'quantity': quantity});
+        _conferencias.add(ConferenciaItem(item: item, quantity: quantity));
       }
     });
 
-    // Limpa os campos após adicionar ou editar
     _itemController.clear();
     _quantityController.clear();
   }
@@ -62,9 +69,36 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
   void _editItem(int index) {
     setState(() {
       _editingIndex = index;
-      _itemController.text = _conferencias[index]['item'];
-      _quantityController.text = _conferencias[index]['quantity'].toString();
+      _itemController.text = _conferencias[index].item;
+      _quantityController.text = _conferencias[index].quantity.toString();
     });
+  }
+
+  // Função de confirmação para excluir
+  void _confirmDelete(int index) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Excluir item'),
+            content: Text(
+              'Tem certeza que deseja excluir o item "${_conferencias[index].item}"?',
+            ),
+            actions: [
+              TextButton(
+                child: Text('Cancelar'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: Text('Excluir'),
+                onPressed: () {
+                  _deleteItem(index);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+    );
   }
 
   // Função para compartilhar o relatório
@@ -76,14 +110,11 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
       return;
     }
 
-    // Gera o texto do relatório
     String report = '** Relatório de Itens Conferidos: **\n\n';
     for (var item in _conferencias) {
-      report +=
-          '# Item: ${item['item']} \n - Quantidade: ${item['quantity']}\n\n';
+      report += '# Item: ${item.item} \n - Quantidade: ${item.quantity}\n\n';
     }
 
-    // Compartilha o relatório com outros aplicativos
     Share.share(report);
   }
 
@@ -91,14 +122,9 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Conferência de Estoque',
-              style: TextStyle(color: Colors.white),
-            ),
-          ],
+        title: Text(
+          'Conferência de Estoque',
+          style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -109,7 +135,7 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
       ),
       body: Stack(
         children: [
-          // Onda no topo
+          // Imagem do topo
           Positioned(
             top: 0,
             left: 0,
@@ -121,16 +147,17 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
             ),
           ),
 
-          // Onda na parte de baixo, fixada no final da tela
+          // Imagem da base
           Align(
             alignment: Alignment.bottomCenter,
             child: Image.asset(
               'assets/image/ondaDeCima.png',
               fit: BoxFit.cover,
-              height: 100, // Tamanho fixo da onda de baixo
+              height: 100,
             ),
           ),
 
+          // Conteúdo principal
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 24.0,
@@ -140,6 +167,17 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (_editingIndex != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        'Editando o item: ${_conferencias[_editingIndex!].item}',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   TextField(
                     controller: _itemController,
                     decoration: InputDecoration(
@@ -158,15 +196,24 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
                   ),
                   SizedBox(height: 16),
                   SizedBox(
-                    width: 350,
+                    width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _addOrEditItem,
                       icon: Icon(Icons.add_box, color: Colors.white),
-                      label: Text(
-                        _editingIndex != null
-                            ? 'Salvar Edição'
-                            : 'Adicionar Item',
-                        style: TextStyle(color: Colors.white),
+                      label: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 250),
+                        transitionBuilder:
+                            (child, animation) => FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                        child: Text(
+                          _editingIndex != null
+                              ? 'Salvar Edição'
+                              : 'Adicionar Item',
+                          key: ValueKey(_editingIndex != null),
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(
@@ -184,64 +231,81 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
                     'Itens Conferidos: ${_conferencias.length} Itens',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
+                  SizedBox(height: 8),
 
-                  // Container para criar o formato quadrado com rolagem
+                  // ListView com tamanho fixo
                   SizedBox(
-                    height: 220, // Defina uma altura fixa para o quadrado
-                    width: 350, // Defina uma largura fixa para o quadrado
+                    height: 220, // Altura fixa para o ListView
                     child: ListView.builder(
                       shrinkWrap:
                           true, // Faz o ListView ocupar apenas o espaço necessário
-                      physics:
-                          BouncingScrollPhysics(), // Permite a rolagem com efeito
+                      physics: BouncingScrollPhysics(),
                       itemCount: _conferencias.length,
                       itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(_conferencias[index]['item']),
-                          subtitle: Text(
-                            'Quantidade: ${_conferencias[index]['quantity']}',
+                        return AnimatedContainer(
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          decoration: BoxDecoration(
+                            color:
+                                _editingIndex == index
+                                    // ignore: deprecated_member_use
+                                    ? Colors.orange.withOpacity(0.1)
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => _editItem(index),
+                          margin: EdgeInsets.symmetric(vertical: 4),
+                          child: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 300),
+                            child: ListTile(
+                              key: ValueKey(_conferencias[index]),
+                              title: Text(_conferencias[index].item),
+                              subtitle: Text(
+                                'Quantidade: ${_conferencias[index].quantity}',
                               ),
-                              IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteItem(index),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _editItem(index),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _confirmDelete(index),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-
-                  SizedBox(height: 10),
-                  // Botão de compartilhar
-                  SizedBox(
-                    width: 350,
-                    child: ElevatedButton.icon(
-                      onPressed: _shareReport,
-                      icon: Icon(Icons.share, color: Colors.white),
-                      label: Text(
-                        'Compartilhar Relatório',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          20,
-                          121,
-                          189,
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12.0, bottom: 20.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _shareReport,
+                          icon: Icon(Icons.share, color: Colors.white),
+                          label: Text(
+                            'Compartilhar Relatório',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              20,
+                              121,
+                              189,
+                            ),
+                            minimumSize: Size(double.infinity, 50),
+                          ),
                         ),
-                        minimumSize: Size(double.infinity, 50),
                       ),
                     ),
                   ),
-                  SizedBox(height: 70),
                 ],
               ),
             ),

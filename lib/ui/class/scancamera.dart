@@ -38,7 +38,17 @@ class _ScannerPageState extends State<ScannerPage> {
     try {
       await _player.play(AssetSource('sound/beepscan.mp3'));
     } catch (e) {
-      //print('Erro ao tocar bip: ${e.toString()}');
+      // Se ocorrer um erro, exibe um log detalhado
+      debugPrint('Erro ao tocar o beep: ${e.toString()}');
+
+      // Opcional: exibir uma mensagem na interface do usuário, caso o erro aconteça
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao reproduzir o som de beep.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -47,6 +57,20 @@ class _ScannerPageState extends State<ScannerPage> {
       isTorchOn = !isTorchOn;
     });
     cameraController.toggleTorch();
+  }
+
+  void _removerCodigo(String codigo) {
+    setState(() {
+      codigosLidos.remove(codigo); // Remove o código da lista
+    });
+
+    // Exibe uma mensagem de confirmação (opcional)
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Código removido: $codigo'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _finalizar() {
@@ -203,8 +227,27 @@ class _ScannerPageState extends State<ScannerPage> {
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           elevation: 2,
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(codigo, style: TextStyle(fontSize: 14)),
+                            padding: const EdgeInsets.all(1.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 16.0,
+                                  ), // Adiciona o espaçamento à esquerda
+                                  child: Text(
+                                    codigo,
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () {
+                                    _removerCodigo(codigo);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },

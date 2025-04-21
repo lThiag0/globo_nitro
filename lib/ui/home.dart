@@ -5,6 +5,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Obter o tamanho da tela
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -14,12 +17,13 @@ class HomePage extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Onda no topo
+          // Onda no topo (ajustando a posição com base no tamanho da tela)
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 100,
+            height:
+                screenHeight * 0.15, // Ajuste de acordo com a altura da tela
             child: Image.asset(
               'assets/image/ondaDeBaixo.png',
               fit: BoxFit.cover,
@@ -60,10 +64,7 @@ class HomePage extends StatelessWidget {
                             ),
                             child: Text(
                               'Escanear produto',
-                              style: TextStyle(
-                                //fontSize: 14,
-                                color: Colors.white,
-                              ),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
@@ -88,20 +89,18 @@ class HomePage extends StatelessWidget {
                             ),
                             child: Text(
                               'Conferir Estoque',
-                              style: TextStyle(
-                                //fontSize: 14,
-                                color: Colors.white,
-                              ),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
                         SizedBox(height: 20),
+
                         // Botão 3
                         SizedBox(
                           width: 300,
                           child: ElevatedButton(
                             onPressed: () {
-                              // Ação do segundo botão
+                              // Ação do terceiro botão
                               Navigator.pushNamed(context, '/info');
                             },
                             style: ElevatedButton.styleFrom(
@@ -115,10 +114,7 @@ class HomePage extends StatelessWidget {
                             ),
                             child: Text(
                               'Informações do Aplicativo',
-                              style: TextStyle(
-                                //fontSize: 14,
-                                color: Colors.white,
-                              ),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
@@ -127,9 +123,12 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              // Footer
+
+              // Footer ajustado
               Padding(
-                padding: const EdgeInsets.only(bottom: 150.0),
+                padding: EdgeInsets.only(
+                  bottom: screenHeight * 0.2,
+                ), // Espaço para evitar sobreposição
                 child: Text(
                   'Criado por Thiago Araujo - Matrícula 6099',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
@@ -138,12 +137,13 @@ class HomePage extends StatelessWidget {
             ],
           ),
 
-          // Onda no rodapé
+          // Onda no rodapé (ajustando a posição com base no tamanho da tela)
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            height: 100,
+            height:
+                screenHeight * 0.15, // Ajuste de acordo com a altura da tela
             child: Image.asset(
               'assets/image/ondaDeCima.png',
               fit: BoxFit.cover,

@@ -26,32 +26,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-class TelaComBotao extends StatelessWidget {
-  const TelaComBotao({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Tela com Botão')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Texto Centralizado', style: TextStyle(fontSize: 24)),
-            SizedBox(height: 20), // Espaço entre o texto e o botão
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-              child: Text('Clique aqui'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

@@ -13,8 +13,12 @@ class ProdutosPage extends StatefulWidget {
 }
 
 class _ProdutosPageState extends State<ProdutosPage> {
-  void gerarEtiquetas() {
+  // Variável para controlar o estado de carregamento
+  bool _isLoading = false;
+
+  void gerarEtiquetas() async {
     try {
+      // Se nenhuma etiqueta foi escaneada, mostra SnackBar e retorna
       if (etiquetasBrancasList.isEmpty &&
           etiquetasAmarelasList.isEmpty &&
           etiquetasDuplicadasList.isEmpty) {
@@ -24,30 +28,53 @@ class _ProdutosPageState extends State<ProdutosPage> {
         return;
       }
 
+      // Inicia o processo de carregamento
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Exibe o diálogo de carregamento
+      showDialog(
+        context: context,
+        barrierDismissible: false, // Impede que o usuário feche o diálogo
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text('Gerando etiquetas...'),
+              ],
+            ),
+          );
+        },
+      );
+
       final numero = numeroController.text.trim();
       final buffer = StringBuffer();
 
       buffer.writeln('Relatório de Etiquetas Nitro:');
       buffer.writeln('\n');
-      // If de etiquetas Brancas
+
+      // Processa as etiquetas Brancas
       if (etiquetasBrancasList.isNotEmpty) {
         buffer.writeln('Códigos de etiquetas Brancas:');
         for (var codigo in etiquetasBrancasList) {
           buffer.writeln(codigo);
         }
-        //conteudo.writeln('\n');
         buffer.writeln('\n');
       }
-      // If de etiquetas Amarelas
+
+      // Processa as etiquetas Amarelas
       if (etiquetasAmarelasList.isNotEmpty) {
         buffer.writeln('Códigos de etiquetas Amarelas:');
         for (var codigo in etiquetasAmarelasList) {
           buffer.writeln(codigo);
         }
-        //conteudo.writeln('\n');
         buffer.writeln('\n');
       }
-      // If de etiquetas Duplicadas
+
+      // Processa as etiquetas Duplicadas
       if (etiquetasDuplicadasList.isNotEmpty) {
         buffer.writeln('Códigos de etiquetas Duplicadas:');
         buffer.writeln('Número para duplica: $numero');
@@ -59,72 +86,28 @@ class _ProdutosPageState extends State<ProdutosPage> {
 
       final textoFinal = buffer.toString();
 
-      // Compartilhar usando o share_plus
+      // Compartilha as etiquetas geradas
       Share.share(textoFinal);
+
+      // Fecha o diálogo de carregamento
+      Navigator.of(context).pop();
     } catch (e, stackTrace) {
+      // Caso ocorra um erro
       debugPrint('Erro ao gerar etiquetas: $e');
       debugPrint(stackTrace.toString());
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao gerar as etiquetas. Tente novamente.')),
       );
+
+      // Fecha o diálogo de carregamento em caso de erro
+      Navigator.of(context).pop();
+    } finally {
+      // Desativa o carregamento independentemente do sucesso ou falha
+      setState(() {
+        _isLoading = false;
+      });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Aguarda o frame inicial renderizar antes de mostrar o diálogo
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _verificarEtiquetasSalvas();
-    });
-  }
-
-  void _verificarEtiquetasSalvas() {
-    // Verifica se há códigos nas listas de etiquetas
-    if (etiquetasBrancasList.isNotEmpty ||
-        etiquetasAmarelasList.isNotEmpty ||
-        etiquetasDuplicadasList.isNotEmpty) {
-      // Exibe um diálogo perguntando ao usuário o que deseja fazer
-      _mostrarDialogo();
-    }
-  }
-
-  void _mostrarDialogo() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Códigos Escaneados salvos'),
-          content: Text(
-            'Há códigos escaneados salvos. Deseja continuar com esses códigos ou limpar?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                // Limpar as listas de etiquetas
-                setState(() {
-                  etiquetasBrancasList.clear();
-                  etiquetasAmarelasList.clear();
-                  etiquetasDuplicadasList.clear();
-                  numeroController.clear();
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Limpar Códigos'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Apenas fecha o diálogo e mantém os códigos salvos
-                Navigator.of(context).pop();
-              },
-              child: Text('Continuar'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -142,7 +125,6 @@ class _ProdutosPageState extends State<ProdutosPage> {
       ),
       body: Stack(
         children: [
-          // Onda no topo
           Positioned(
             top: 0,
             left: 0,
@@ -153,8 +135,6 @@ class _ProdutosPageState extends State<ProdutosPage> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Onda no rodapé
           Positioned(
             bottom: 0,
             left: 0,
@@ -165,8 +145,6 @@ class _ProdutosPageState extends State<ProdutosPage> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Conteúdo centralizado
           Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -177,134 +155,71 @@ class _ProdutosPageState extends State<ProdutosPage> {
                     'Escolha uma opção de etiqueta:',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-
                   SizedBox(height: 40),
-
-                  // Botão 1
-                  SizedBox(
-                    width: 300,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Ação do botão
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EtiquetaBrancaPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          20,
-                          121,
-                          189,
-                        ),
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'Etiquetas brancas',
-                        style: TextStyle(
-                          //fontSize: 14,
-                          color: Colors.white,
-                        ),
+                  // Botões de opções de etiquetas
+                  _buildEtiquetaButton(
+                    'Etiquetas brancas',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EtiquetaBrancaPage(),
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
-                  // Botão 2
-                  SizedBox(
-                    width: 300,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Ação do botão
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EtiquetaAmarelaPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          20,
-                          121,
-                          189,
-                        ),
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'Etiquetas Amarelas',
-                        style: TextStyle(
-                          //fontSize: 14,
-                          color: Colors.white,
-                        ),
+                  _buildEtiquetaButton(
+                    'Etiquetas Amarelas',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EtiquetaAmarelaPage(),
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
-                  // Botão 3
-                  SizedBox(
-                    width: 300,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Ação do botão
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EtiquetaDuplicadoPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          20,
-                          121,
-                          189,
-                        ),
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'Etiquetas Duplicadas',
-                        style: TextStyle(
-                          //fontSize: 14,
-                          color: Colors.white,
-                        ),
+                  _buildEtiquetaButton(
+                    'Etiquetas Duplicadas',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EtiquetaDuplicadoPage(),
                       ),
                     ),
                   ),
-
                   SizedBox(height: 20),
-
-                  // Botão 4
-                  SizedBox(
-                    width: 300,
-                    child: ElevatedButton(
-                      onPressed: gerarEtiquetas,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 247, 65, 65),
-                        minimumSize: Size(double.infinity, 50),
-                      ),
-                      child: Text(
-                        'Gerar Etiquetas',
-                        style: TextStyle(
-                          //fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                  // Botão para gerar as etiquetas
+                  _buildEtiquetaButton(
+                    'Gerar Etiquetas',
+                    gerarEtiquetas,
+                    backgroundColor: Colors.redAccent,
                   ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Função auxiliar para criar botões
+  Widget _buildEtiquetaButton(
+    String label,
+    VoidCallback onPressed, {
+    Color backgroundColor = const Color.fromARGB(255, 20, 121, 189),
+  }) {
+    return SizedBox(
+      width: 300,
+      child: ElevatedButton(
+        onPressed:
+            _isLoading
+                ? null
+                : onPressed, // Desabilita o botão durante o carregamento
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          minimumSize: Size(double.infinity, 50),
+        ),
+        child: Text(label, style: TextStyle(color: Colors.white)),
       ),
     );
   }
