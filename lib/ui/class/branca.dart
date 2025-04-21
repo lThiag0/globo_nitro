@@ -226,41 +226,49 @@ class _EtiquetaBrancaPageState extends State<EtiquetaBrancaPage> {
                   SizedBox(height: 10),
 
                   // |Botoes de salvar e limpa
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            codigoController.clear();
-                            etiquetasBrancasList.clear();
-                          },
-                          icon: Icon(Icons.clear, color: Colors.white),
-                          label: Text(
-                            'Limpar',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 247, 65, 65),
-                            minimumSize: Size(double.infinity, 50),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: salvarCodigo,
-                          icon: Icon(Icons.save, color: Colors.white),
-                          label: Text(
-                            'Salvar',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 20, 121, 189),
-                            minimumSize: Size(double.infinity, 50),
+                  SizedBox(
+                    width: 350,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              codigoController.clear();
+                              etiquetasBrancasList.clear();
+                            },
+                            icon: Icon(Icons.clear, color: Colors.white),
+                            label: Text(
+                              'Limpar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color.fromARGB(255, 247, 65, 65),
+                              minimumSize: Size(double.infinity, 50),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 20),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: salvarCodigo,
+                            icon: Icon(Icons.save, color: Colors.white),
+                            label: Text(
+                              'Salvar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color.fromARGB(
+                                255,
+                                20,
+                                121,
+                                189,
+                              ),
+                              minimumSize: Size(double.infinity, 50),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
