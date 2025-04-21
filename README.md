@@ -5,7 +5,7 @@
 <h1 align="center">📱 Nitro</h1>
 
 <p align="center">
-  Um aplicativo Flutter moderno e funcional com recursos de scanner de QR code, compartilhamento de conteúdo e reprodução de áudio. Para facilitar os processos de escanear codigos de produtos e enviar via whats para o computador, facilitando e agilizando todo o processo, alem de fazer contagem de estoque.
+  Um aplicativo Flutter moderno e funcional com leitura de QR Code, compartilhamento de conteúdo e reprodução de áudio. Ideal para escanear códigos de produtos e enviá-los rapidamente para o computador via WhatsApp, agilizando processos e auxiliando na contagem de estoque.
 </p>
 
 ---
@@ -15,8 +15,22 @@
 - 📷 Leitura de QR Codes com **Mobile Scanner**
 - 📤 Compartilhamento de conteúdo com **Share Plus**
 - 🔊 Reprodução de áudio com **Audio Players**
+- 📦 Conferência de Estoque
 - 🧭 Interface amigável e responsiva
 - ⚙️ Compatível com Android e iOS
+
+---
+
+## 🖼️ Imagens do App
+
+<p align="center">
+  <img src="assets/screenshots/home.png" alt="Tela Inicial" width="200"/>
+  <img src="assets/screenshots/ean_scanner.png" alt="Leitor de Codigo EAN" width="200"/>
+  <img src="assets/screenshots/etiquetas.png" alt="Etiquetas" width="200"/>
+  <img src="assets/screenshots/estoque.png" alt="Tela de Conferência de Estoque" width="200"/>
+  <br/>
+  <em>Telas: Home • Scanner de Codigo EAN • Etiquetas • Conferência de Estoque</em>
+</p>
 
 ---
 
@@ -32,9 +46,34 @@ Este projeto utiliza as seguintes bibliotecas principais:
 
 ---
 
+## 🤝 Contribuindo
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests com melhorias, correções ou novas funcionalidades.
+
+---
+
+## 📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo [MIT](./LICENSE) para mais detalhes.
+
+---
+
+## 🦸 Criado por:
+<p align="center"> Feito com ❤️ por <a href="https://www.linkedin.com/in/thiago-araujo-furtado/">Thiago Araujo</a> </p>
+
+---
+
 ## 🚀 Como rodar o projeto
 
 1. Clone o repositório:
 
 ```bash
 git clone https://github.com/lThiag0/globo_nitro.git
+cd globo_nitro
+
+2. Instale as dependências:
+flutter pub get
+
+3. Execute o app:
+flutter run
+
+---
+
