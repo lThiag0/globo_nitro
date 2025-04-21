@@ -10,6 +10,12 @@
 
 ---
 
+## 📱 Baixe o aplicativo
+
+<a href="https://github.com/lThiag0/globo_nitro/releases/download/v1.0.0/nitro.apk">Baixe aqui</a>
+
+---
+
 ## ✨ Funcionalidades
 
 - 📷 Leitura de Códigos EAN com **Mobile Scanner**
