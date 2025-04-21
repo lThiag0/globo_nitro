@@ -248,6 +248,7 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
                             onPressed: () {
                               codigoController.clear();
                               etiquetasDuplicadasList.clear();
+                              numeroController.clear();
                             },
                             icon: Icon(Icons.clear, color: Colors.white),
                             label: Text(

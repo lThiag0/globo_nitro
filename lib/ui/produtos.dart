@@ -111,6 +111,62 @@ class _ProdutosPageState extends State<ProdutosPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    // Aguarda o frame inicial renderizar antes de mostrar o diálogo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _verificarEtiquetasSalvas();
+    });
+  }
+
+  void _verificarEtiquetasSalvas() {
+    // Verifica se há códigos nas listas de etiquetas
+    if (etiquetasBrancasList.isNotEmpty ||
+        etiquetasAmarelasList.isNotEmpty ||
+        etiquetasDuplicadasList.isNotEmpty) {
+      // Exibe um diálogo perguntando ao usuário o que deseja fazer
+      _mostrarDialogo();
+    }
+  }
+
+  void _mostrarDialogo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Códigos Escaneados salvos'),
+          content: Text(
+            'Há códigos escaneados salvos. Deseja continuar com esses códigos ou limpar?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // Limpar as listas de etiquetas
+                setState(() {
+                  etiquetasBrancasList.clear();
+                  etiquetasAmarelasList.clear();
+                  etiquetasDuplicadasList.clear();
+                  numeroController.clear();
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Limpar Códigos'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Apenas fecha o diálogo e mantém os códigos salvos
+                Navigator.of(context).pop();
+              },
+              child: Text('Continuar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
