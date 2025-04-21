@@ -5,14 +5,14 @@
 <h1 align="center">📱 Nitro</h1>
 
 <p align="center">
-  Um aplicativo Flutter moderno e funcional com leitura de QR Code, compartilhamento de conteúdo e reprodução de áudio. Ideal para escanear códigos de produtos e enviá-los rapidamente para o computador via WhatsApp, agilizando processos e auxiliando na contagem de estoque.
+  Um aplicativo Flutter moderno e funcional com leitura de Códigos EAN de produtos, compartilhamento de conteúdo e reprodução de áudio. Ideal para escanear códigos de produtos e enviá-los rapidamente para o computador via WhatsApp, agilizando processos e auxiliando na contagem de estoque.
 </p>
 
 ---
 
 ## ✨ Funcionalidades
 
-- 📷 Leitura de QR Codes com **Mobile Scanner**
+- 📷 Leitura de Códigos EAN com **Mobile Scanner**
 - 📤 Compartilhamento de conteúdo com **Share Plus**
 - 🔊 Reprodução de áudio com **Audio Players**
 - 📦 Conferência de Estoque
@@ -63,10 +63,10 @@ Este projeto está sob a licença MIT. Veja o arquivo [MIT](./LICENSE) para mais
 
 ## 🚀 Como rodar o projeto
 
-1. Clone o repositório:
+- Clone o repositório:
 
 ```bash
-git clone https://github.com/lThiag0/globo_nitro.git
+1. git clone https://github.com/lThiag0/globo_nitro.git
 cd globo_nitro
 
 2. Instale as dependências:
@@ -74,6 +74,3 @@ flutter pub get
 
 3. Execute o app:
 flutter run
-
----
-
