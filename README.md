@@ -44,7 +44,9 @@
 
 Veja como o app funciona assistindo ao vídeo abaixo:
 
-[![Demonstração do Nitro](assets/screenshots/home.png)](assets/screenshots/videonitro.mp4)
+<a href="assets/screenshots/videonitro.mp4" target="_blank">
+  <img src="assets/screenshots/home.png" alt="Demonstração do Nitro app" width="100"/>
+</a>
 
 Clique na imagem acima para assistir ao vídeo de demonstração do Nitro.
 
