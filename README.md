@@ -40,6 +40,16 @@
 
 ---
 
+## 🎬 Vídeo de Demonstração
+
+Veja como o app funciona assistindo ao vídeo abaixo:
+
+[![Demonstração do Nitro](assets/screenshots/home.png)](assets/screenshots/videonitro.mp4)
+
+Clique na imagem acima para assistir ao vídeo de demonstração do Nitro.
+
+---
+
 ## 🛠️ Tecnologias e Dependências
 
 Este projeto utiliza as seguintes bibliotecas principais:
