@@ -46,6 +46,7 @@ class _ScannerPageState extends State<ScannerPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro ao reproduzir o som de beep.'),
+          backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
       );
@@ -126,6 +127,15 @@ class _ScannerPageState extends State<ScannerPage> {
         _canScan = false;
         await Future.delayed(Duration(milliseconds: 800));
         _canScan = true;
+      } else {
+        // avisa quando o codigo é duplicado
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Código EAN: $code ja foi escaneado!'),
+            backgroundColor: Colors.red,
+            duration: Duration(milliseconds: 700),
+          ),
+        );
       }
     }
 

@@ -1,7 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:globo_nitro/ui/class/amarela.dart';
+import 'package:globo_nitro/ui/class/branca.dart';
+import 'package:globo_nitro/ui/class/duplicado.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<bool> _verificarEtiquetasSalvas() async {
+    if (etiquetasBrancasList.isNotEmpty ||
+        etiquetasAmarelasList.isNotEmpty ||
+        etiquetasDuplicadasList.isNotEmpty) {
+      return await _mostrarDialogoAviso();
+    } else {
+      return true; // Pode continuar se não houver códigos
+    }
+  }
+
+  Future<bool> _mostrarDialogoAviso() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Códigos Escaneados salvos'),
+              content: Text(
+                'Há códigos escaneados salvos. Deseja continuar com esses códigos ou limpar?',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    // Limpar as listas
+                    setState(() {
+                      etiquetasBrancasList.clear();
+                      etiquetasAmarelasList.clear();
+                      etiquetasDuplicadasList.clear();
+                      numeroController.clear();
+                    });
+                    Navigator.of(context).pop(true); // Pode continuar
+                  },
+                  child: Text('Limpar Códigos'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).pop(true); // Pode continuar sem limpar
+                  },
+                  child: Text('Continuar'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +111,15 @@ class HomePage extends StatelessWidget {
                         SizedBox(
                           width: 300,
                           child: ElevatedButton(
-                            onPressed: () {
-                              // Ação do botão
-                              Navigator.pushNamed(context, '/produtos');
+                            onPressed: () async {
+                              // Verifica os códigos salvos e espera a ação do usuário
+                              bool podeContinuar =
+                                  await _verificarEtiquetasSalvas();
+
+                              if (podeContinuar) {
+                                // ignore: use_build_context_synchronously
+                                Navigator.pushNamed(context, '/produtos');
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(
@@ -113,7 +181,7 @@ class HomePage extends StatelessWidget {
                               minimumSize: Size(double.infinity, 50),
                             ),
                             child: Text(
-                              'Informações do Aplicativo',
+                              'Sobre o Aplicativo',
                               style: TextStyle(color: Colors.white),
                             ),
                           ),

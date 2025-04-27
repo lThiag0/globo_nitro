@@ -36,9 +36,12 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
 
     final int quantity = int.tryParse(quantityText) ?? 0;
     if (quantity <= 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Quantidade inválida')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Quantidade inválida'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -104,13 +107,16 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
   // Função para compartilhar o relatório
   void _shareReport() {
     if (_conferencias.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Nenhum item para compartilhar.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Nenhuma contagem de item para compartilhar.'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
-    String report = '** Relatório de Itens Conferidos: **\n\n';
+    String report = '** Relatório de Itens Conferidos Nitro: **\n\n';
     for (var item in _conferencias) {
       report += '# Item: ${item.item} \n - Quantidade: ${item.quantity}\n\n';
     }
@@ -150,10 +156,13 @@ class _StockCheckScreenState extends State<StockCheckScreen> {
           // Imagem da base
           Align(
             alignment: Alignment.bottomCenter,
-            child: Image.asset(
-              'assets/image/ondaDeCima.png',
-              fit: BoxFit.cover,
-              height: 100,
+            child: SizedBox(
+              height: 100, // Tamanho fixo da onda de baixo
+              width: double.infinity, // Garante que a onda ocupe toda a largura
+              child: Image.asset(
+                'assets/image/ondaDeCima.png',
+                fit: BoxFit.cover, // Faz a imagem se ajustar corretamente
+              ),
             ),
           ),
 

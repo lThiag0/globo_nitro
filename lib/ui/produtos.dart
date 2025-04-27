@@ -23,7 +23,10 @@ class _ProdutosPageState extends State<ProdutosPage> {
           etiquetasAmarelasList.isEmpty &&
           etiquetasDuplicadasList.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Nenhuma etiqueta escaneada para gerar.')),
+          SnackBar(
+            content: Text('Nenhuma etiqueta escaneada para gerar.'),
+            backgroundColor: Colors.red,
+          ),
         );
         return;
       }
@@ -97,7 +100,10 @@ class _ProdutosPageState extends State<ProdutosPage> {
       debugPrint(stackTrace.toString());
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao gerar as etiquetas. Tente novamente.')),
+        SnackBar(
+          content: Text('Erro ao gerar as etiquetas. Tente novamente.'),
+          backgroundColor: Colors.red,
+        ),
       );
 
       // Fecha o diálogo de carregamento em caso de erro
@@ -113,21 +119,6 @@ class _ProdutosPageState extends State<ProdutosPage> {
   @override
   void initState() {
     super.initState();
-
-    // Aguarda o frame inicial renderizar antes de mostrar o diálogo
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _verificarEtiquetasSalvas();
-    });
-  }
-
-  void _verificarEtiquetasSalvas() {
-    // Verifica se há códigos nas listas de etiquetas
-    if (etiquetasBrancasList.isNotEmpty ||
-        etiquetasAmarelasList.isNotEmpty ||
-        etiquetasDuplicadasList.isNotEmpty) {
-      // Exibe um diálogo perguntando ao usuário o que deseja fazer
-      _mostrarDialogo();
-    }
   }
 
   void _mostrarDialogo() {
@@ -135,11 +126,18 @@ class _ProdutosPageState extends State<ProdutosPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Códigos Escaneados salvos'),
+          title: Text('Limpar Códigos Escaneados salvos'),
           content: Text(
             'Há códigos escaneados salvos. Deseja continuar com esses códigos ou limpar?',
           ),
           actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                // Apenas fecha o diálogo e mantém os códigos salvos
+                Navigator.of(context).pop();
+              },
+              child: Text('Continuar'),
+            ),
             TextButton(
               onPressed: () {
                 // Limpar as listas de etiquetas
@@ -153,13 +151,6 @@ class _ProdutosPageState extends State<ProdutosPage> {
               },
               child: Text('Limpar Códigos'),
             ),
-            TextButton(
-              onPressed: () {
-                // Apenas fecha o diálogo e mantém os códigos salvos
-                Navigator.of(context).pop();
-              },
-              child: Text('Continuar'),
-            ),
           ],
         );
       },
@@ -172,10 +163,19 @@ class _ProdutosPageState extends State<ProdutosPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Etiquetas', style: TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading:
+            ModalRoute.of(context)?.settings.name == '/'
+                ? null // Remove a seta de voltar se for a página inicial
+                : IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed:
+                      () => Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/', // Rota para a página inicial
+                        (Route<dynamic> route) =>
+                            false, // Remove todas as rotas da pilha
+                      ),
+                ),
         backgroundColor: const Color.fromARGB(255, 20, 121, 189),
         elevation: 0,
       ),
@@ -207,9 +207,15 @@ class _ProdutosPageState extends State<ProdutosPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Escolha uma opção de etiqueta:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Escolha uma opção de etiqueta:',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 40),
                   // Botões de opções de etiquetas
@@ -249,6 +255,16 @@ class _ProdutosPageState extends State<ProdutosPage> {
                     gerarEtiquetas,
                     backgroundColor: Colors.redAccent,
                   ),
+                  if (etiquetasBrancasList.isNotEmpty ||
+                      etiquetasAmarelasList.isNotEmpty ||
+                      etiquetasDuplicadasList.isNotEmpty) ...[
+                    SizedBox(height: 20),
+                    _buildEtiquetaButton('Limpar Códigos', () {
+                      setState(() {
+                        _mostrarDialogo();
+                      });
+                    }, backgroundColor: Colors.grey),
+                  ],
                 ],
               ),
             ),

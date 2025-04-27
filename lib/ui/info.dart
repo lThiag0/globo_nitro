@@ -1,19 +1,60 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class SobreScreen extends StatelessWidget {
+class SobreScreen extends StatefulWidget {
   const SobreScreen({super.key});
 
+  @override
+  // ignore: library_private_types_in_public_api
+  _SobreScreenState createState() => _SobreScreenState();
+}
+
+class _SobreScreenState extends State<SobreScreen> {
+  String _appVersion = 'Carregando...';
+
+  @override
+  void initState() {
+    super.initState();
+    _getAppVersion();
+  }
+
+  // Função para obter a versão do aplicativo
+  _getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = packageInfo.version; // Atribui a versão do app
+    });
+  }
+
   // Função para abrir o URL no navegador ou aplicativo de e-mail
-  _launchURL(String url) async {
-    // ignore: deprecated_member_use
-    if (await canLaunch(url)) {
-      // ignore: deprecated_member_use
-      await launch(url);
-    } else {
-      throw 'Não foi possível abrir o link: $url';
+  _launchURL(String url, BuildContext context) async {
+    try {
+      // Verifica se o link pode ser aberto
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        // Abre o link
+        await launchUrl(uri);
+      } else {
+        // Exibe uma mensagem de erro
+        // ignore: use_build_context_synchronously
+        _showErrorSnackBar(context, 'Não foi possível abrir o link: $url');
+      }
+    } catch (e) {
+      // Exibe uma mensagem de erro em caso de exceção
+      // ignore: use_build_context_synchronously
+      _showErrorSnackBar(context, 'Ocorreu um erro ao tentar abrir o link.');
     }
+  }
+
+  // Função para exibir o SnackBar com a mensagem de erro
+  void _showErrorSnackBar(BuildContext context, String message) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   @override
@@ -50,12 +91,16 @@ class SobreScreen extends StatelessWidget {
           // Onda na parte de baixo, fixada no final da tela
           Align(
             alignment: Alignment.bottomCenter,
-            child: Image.asset(
-              'assets/image/ondaDeCima.png',
-              fit: BoxFit.cover,
+            child: SizedBox(
               height: 100, // Tamanho fixo da onda de baixo
+              width: double.infinity, // Garante que a onda ocupe toda a largura
+              child: Image.asset(
+                'assets/image/ondaDeCima.png',
+                fit: BoxFit.cover, // Faz a imagem se ajustar corretamente
+              ),
             ),
           ),
+
           // Conteúdo central
           SingleChildScrollView(
             child: Padding(
@@ -64,6 +109,8 @@ class SobreScreen extends StatelessWidget {
                 vertical: 40.0,
               ),
               child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Centraliza verticalmente
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Logo centralizado
@@ -121,7 +168,7 @@ class SobreScreen extends StatelessWidget {
                   SizedBox(height: 24),
                   // Versão do aplicativo
                   Text(
-                    'Versão: 1.0.0',
+                    'Versão: $_appVersion',
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                     textAlign: TextAlign.center,
                   ),
@@ -131,6 +178,7 @@ class SobreScreen extends StatelessWidget {
                     onTap:
                         () => _launchURL(
                           'https://github.com/lThiag0/globo_nitro/',
+                          context,
                         ),
                     child: Text(
                       'Visite nosso GitHub',
@@ -146,6 +194,7 @@ class SobreScreen extends StatelessWidget {
                     onTap:
                         () => _launchURL(
                           'mailto:thiaguinhofurtado07@hotmail.com',
+                          context,
                         ),
                     child: Text(
                       'Entre em contato por e-mail',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:globo_nitro/ui/class/scancamera.dart';
+import 'package:globo_nitro/ui/produtos.dart';
 
 final TextEditingController numeroController = TextEditingController();
 final List<String> etiquetasDuplicadasList = [];
@@ -84,13 +85,17 @@ class _EtiquetaDuplicadoPageState extends State<EtiquetaDuplicadoPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProdutosPage()),
+      ).then((_) => setState(() {}));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Não foi encontrado nem um codigo escaneado ou quantidade para duplicar!',
           ),
+          backgroundColor: Colors.red,
         ),
       );
     }

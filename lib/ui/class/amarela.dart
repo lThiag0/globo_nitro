@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:globo_nitro/ui/class/scancamera.dart';
+import 'package:globo_nitro/ui/produtos.dart';
 
 final List<String> etiquetasAmarelasList = [];
 
@@ -81,10 +82,16 @@ class _EtiquetaAmarelaPageState extends State<EtiquetaAmarelaPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProdutosPage()),
+      ).then((_) => setState(() {}));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Não foi encontrado nem um codigo escaneado!')),
+        SnackBar(
+          content: Text('Não foi encontrado nem um codigo escaneado!'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
