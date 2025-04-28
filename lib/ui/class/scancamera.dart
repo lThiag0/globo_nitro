@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -17,14 +19,17 @@ class _ScannerPageState extends State<ScannerPage> {
 
   final Set<String> codigosLidos = {};
   late final AudioPlayer _player;
-  bool _canScan = true;
   bool isTorchOn = false;
   bool isScanning = false;
+  late final GlobalKey<AnimatedListState> _listKey;
+  bool _dialogAberto =
+      false; // <--- novo controle para evitar abrir vários diálogos
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    _listKey = GlobalKey<AnimatedListState>();
   }
 
   @override
@@ -38,18 +43,7 @@ class _ScannerPageState extends State<ScannerPage> {
     try {
       await _player.play(AssetSource('sound/beepscan.mp3'));
     } catch (e) {
-      // Se ocorrer um erro, exibe um log detalhado
       debugPrint('Erro ao tocar o beep: ${e.toString()}');
-
-      // Opcional: exibir uma mensagem na interface do usuário, caso o erro aconteça
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao reproduzir o som de beep.'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
     }
   }
 
@@ -61,17 +55,30 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   void _removerCodigo(String codigo) {
-    setState(() {
-      codigosLidos.remove(codigo); // Remove o código da lista
-    });
+    final index = codigosLidos.toList().indexOf(codigo);
 
-    // Exibe uma mensagem de confirmação (opcional)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Código removido: $codigo'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (index >= 0) {
+      setState(() {
+        codigosLidos.remove(codigo);
+      });
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) => SizeTransition(
+          sizeFactor: animation,
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            color: Colors.red[100],
+            child: ListTile(
+              title: Text(
+                codigo,
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+            ),
+          ),
+        ),
+        duration: Duration(milliseconds: 400),
+      );
+    }
   }
 
   void _finalizar() {
@@ -104,43 +111,65 @@ class _ScannerPageState extends State<ScannerPage> {
     }
   }
 
+  Future<void> _mostrarAlertaCodigoRepetido(String codigo) async {
+    if (_dialogAberto) return; // se já tem um alerta aberto, não faz nada
+    _dialogAberto = true;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false, // Não fecha clicando fora
+      builder:
+          (context) => AlertDialog(
+            title: Text('Código já escaneado'),
+            content: Text('O código $codigo já foi lido.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _dialogAberto = false;
+                },
+                child: Text('Continuar'),
+              ),
+            ],
+          ),
+    );
+  }
+
   void _onBarcodeDetected(BarcodeCapture barcodeCapture) async {
-    if (!_canScan) return;
+    if (isScanning) return; // Se já está escaneando, não faz nada!
 
     setState(() {
-      isScanning = true;
+      isScanning = true; // Mostra o "Escaneando..." na tela
     });
+
+    String? novoCodigo;
 
     for (final barcode in barcodeCapture.barcodes) {
       final code = barcode.rawValue;
       if (code != null && code.isNotEmpty && !codigosLidos.contains(code)) {
-        codigosLidos.add(code);
-        setState(() {});
-        await _playBeep();
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Código adicionado: $code'),
-            duration: Duration(milliseconds: 700),
-          ),
-        );
-        _canScan = false;
-        await Future.delayed(Duration(milliseconds: 800));
-        _canScan = true;
-      } else {
-        // avisa quando o codigo é duplicado
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Código EAN: $code ja foi escaneado!'),
-            backgroundColor: Colors.red,
-            duration: Duration(milliseconds: 700),
-          ),
-        );
+        novoCodigo = code;
+        break;
+      } else if (code != null && codigosLidos.contains(code)) {
+        HapticFeedback.heavyImpact();
+        await _mostrarAlertaCodigoRepetido(code);
+        break;
       }
     }
 
+    if (novoCodigo != null) {
+      setState(() {
+        codigosLidos.add(novoCodigo!);
+        _listKey.currentState?.insertItem(codigosLidos.length - 1);
+      });
+
+      await _playBeep();
+      HapticFeedback.mediumImpact();
+    }
+
+    await Future.delayed(Duration(milliseconds: 1500));
+
     setState(() {
-      isScanning = false;
+      isScanning = false; // Some o "Escaneando..."
     });
   }
 
@@ -229,34 +258,37 @@ class _ScannerPageState extends State<ScannerPage> {
                   SizedBox(height: 8),
                   SizedBox(
                     height: 200,
-                    child: ListView.builder(
-                      itemCount: codigosLidos.length,
-                      itemBuilder: (context, index) {
+                    child: AnimatedList(
+                      key: _listKey,
+                      initialItemCount: codigosLidos.length,
+                      itemBuilder: (context, index, animation) {
                         final codigo = codigosLidos.elementAt(index);
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          elevation: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(1.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 16.0,
-                                  ), // Adiciona o espaçamento à esquerda
-                                  child: Text(
-                                    codigo,
-                                    style: TextStyle(fontSize: 14),
+                        return SizeTransition(
+                          sizeFactor: animation,
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: Text(
+                                      codigo,
+                                      style: TextStyle(fontSize: 14),
+                                    ),
                                   ),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    _removerCodigo(codigo);
-                                  },
-                                ),
-                              ],
+                                  IconButton(
+                                    icon: Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () {
+                                      _removerCodigo(codigo);
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );

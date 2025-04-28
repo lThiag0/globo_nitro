@@ -20,36 +20,28 @@ class _SobreScreenState extends State<SobreScreen> {
     _getAppVersion();
   }
 
-  // Função para obter a versão do aplicativo
-  _getAppVersion() async {
+  Future<void> _getAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) return;
     setState(() {
-      _appVersion = packageInfo.version; // Atribui a versão do app
+      _appVersion = packageInfo.version;
     });
   }
 
-  // Função para abrir o URL no navegador ou aplicativo de e-mail
-  _launchURL(String url, BuildContext context) async {
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+
     try {
-      // Verifica se o link pode ser aberto
-      final Uri uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        // Abre o link
-        await launchUrl(uri);
-      } else {
-        // Exibe uma mensagem de erro
-        // ignore: use_build_context_synchronously
-        _showErrorSnackBar(context, 'Não foi possível abrir o link: $url');
-      }
+      // Tentando abrir a URL diretamente
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      // Exibe uma mensagem de erro em caso de exceção
-      // ignore: use_build_context_synchronously
-      _showErrorSnackBar(context, 'Ocorreu um erro ao tentar abrir o link.');
+      // Caso ocorra erro, exibe uma mensagem
+      if (!mounted) return;
+      _showErrorSnackBar('Não foi possível abrir o link: $url');
     }
   }
 
-  // Função para exibir o SnackBar com a mensagem de erro
-  void _showErrorSnackBar(BuildContext context, String message) {
+  void _showErrorSnackBar(String message) {
     final snackBar = SnackBar(
       content: Text(message),
       backgroundColor: Colors.red,
@@ -59,16 +51,16 @@ class _SobreScreenState extends State<SobreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double verticalPadding = MediaQuery.of(context).size.height * 0.05;
+
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Sobre o Aplicativo', style: TextStyle(color: Colors.white)),
-          ],
+        title: const Text(
+          'Sobre o Aplicativo',
+          style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: const Color.fromARGB(255, 20, 121, 189),
@@ -76,7 +68,6 @@ class _SobreScreenState extends State<SobreScreen> {
       ),
       body: Stack(
         children: [
-          // Onda no topo
           Positioned(
             top: 0,
             left: 0,
@@ -87,65 +78,56 @@ class _SobreScreenState extends State<SobreScreen> {
               fit: BoxFit.cover,
             ),
           ),
-
-          // Onda na parte de baixo, fixada no final da tela
           Align(
             alignment: Alignment.bottomCenter,
             child: SizedBox(
-              height: 100, // Tamanho fixo da onda de baixo
-              width: double.infinity, // Garante que a onda ocupe toda a largura
+              height: 100,
+              width: double.infinity,
               child: Image.asset(
                 'assets/image/ondaDeCima.png',
-                fit: BoxFit.cover, // Faz a imagem se ajustar corretamente
+                fit: BoxFit.cover,
               ),
             ),
           ),
-
-          // Conteúdo central
           SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: 16.0,
-                vertical: 40.0,
+                vertical: verticalPadding,
               ),
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center, // Centraliza verticalmente
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Logo centralizado
                   Container(
-                    width: 120.0,
-                    height: 120.0,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
                       borderRadius: BorderRadius.circular(16.0),
-                      image: DecorationImage(
+                      image: const DecorationImage(
                         image: AssetImage('assets/image/globonitroicon.png'),
                         fit: BoxFit.cover,
                       ),
                     ),
                     margin: const EdgeInsets.only(bottom: 24.0),
                   ),
-                  // Título da seção
-                  Text(
+                  const Text(
                     'Sobre o Aplicativo',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 20, 121, 189),
+                      color: Color.fromARGB(255, 20, 121, 189),
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Este é um aplicativo desenvolvido para facilitar a vida dos usuários, oferecendo uma série de funcionalidades que permitem realizar tarefas de forma mais rápida e prática.',
+                  const SizedBox(height: 16),
+                  const Text(
+                    'App ideal para escanear códigos de produtos e enviá-los rapidamente para o computador via WhatsApp, agilizando processos e auxiliando na contagem de estoque.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
-                  SizedBox(height: 24),
-                  // Informações do criador
-                  Text(
+                  const SizedBox(height: 24),
+                  const Text(
                     'Criado por:',
                     style: TextStyle(
                       fontSize: 18,
@@ -154,33 +136,25 @@ class _SobreScreenState extends State<SobreScreen> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Thiago Araujo',
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Thiago Araujo\nMatrícula: 6099',
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                     textAlign: TextAlign.center,
                   ),
-                  Text(
-                    'Matrícula: 6099',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-                  // Versão do aplicativo
+                  const SizedBox(height: 24),
                   Text(
                     'Versão: $_appVersion',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 24),
-                  // Links interativos
+                  const SizedBox(height: 24),
                   GestureDetector(
                     onTap:
                         () => _launchURL(
                           'https://github.com/lThiag0/globo_nitro/',
-                          context,
                         ),
-                    child: Text(
+                    child: const Text(
                       'Visite nosso GitHub',
                       style: TextStyle(
                         fontSize: 16,
@@ -189,14 +163,13 @@ class _SobreScreenState extends State<SobreScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   GestureDetector(
                     onTap:
                         () => _launchURL(
                           'mailto:thiaguinhofurtado07@hotmail.com',
-                          context,
                         ),
-                    child: Text(
+                    child: const Text(
                       'Entre em contato por e-mail',
                       style: TextStyle(
                         fontSize: 16,
