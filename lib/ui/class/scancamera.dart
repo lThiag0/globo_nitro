@@ -22,8 +22,7 @@ class _ScannerPageState extends State<ScannerPage> {
   bool isTorchOn = false;
   bool isScanning = false;
   late final GlobalKey<AnimatedListState> _listKey;
-  bool _dialogAberto =
-      false; // <--- novo controle para evitar abrir vários diálogos
+  bool _dialogAberto = false;
 
   @override
   void initState() {
@@ -56,7 +55,6 @@ class _ScannerPageState extends State<ScannerPage> {
 
   void _removerCodigo(String codigo) {
     final index = codigosLidos.toList().indexOf(codigo);
-
     if (index >= 0) {
       setState(() {
         codigosLidos.remove(codigo);
@@ -112,12 +110,12 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   Future<void> _mostrarAlertaCodigoRepetido(String codigo) async {
-    if (_dialogAberto) return; // se já tem um alerta aberto, não faz nada
+    if (_dialogAberto) return;
     _dialogAberto = true;
 
     await showDialog(
       context: context,
-      barrierDismissible: false, // Não fecha clicando fora
+      barrierDismissible: false,
       builder:
           (context) => AlertDialog(
             title: Text('Código já escaneado'),
@@ -136,23 +134,33 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   void _onBarcodeDetected(BarcodeCapture barcodeCapture) async {
-    if (isScanning) return; // Se já está escaneando, não faz nada!
+    if (isScanning) return;
 
     setState(() {
-      isScanning = true; // Mostra o "Escaneando..." na tela
+      isScanning = true;
     });
 
     String? novoCodigo;
 
     for (final barcode in barcodeCapture.barcodes) {
       final code = barcode.rawValue;
-      if (code != null && code.isNotEmpty && !codigosLidos.contains(code)) {
-        novoCodigo = code;
-        break;
-      } else if (code != null && codigosLidos.contains(code)) {
-        HapticFeedback.heavyImpact();
-        await _mostrarAlertaCodigoRepetido(code);
-        break;
+
+      if (code != null && code.isNotEmpty) {
+        if (!validarEAN(code)) {
+          setState(() {
+            isScanning = false;
+          });
+          break;
+        }
+
+        if (!codigosLidos.contains(code)) {
+          novoCodigo = code;
+          break;
+        } else {
+          HapticFeedback.heavyImpact();
+          await _mostrarAlertaCodigoRepetido(code);
+          break;
+        }
       }
     }
 
@@ -169,7 +177,7 @@ class _ScannerPageState extends State<ScannerPage> {
     await Future.delayed(Duration(milliseconds: 1500));
 
     setState(() {
-      isScanning = false; // Some o "Escaneando..."
+      isScanning = false;
     });
   }
 
@@ -302,4 +310,27 @@ class _ScannerPageState extends State<ScannerPage> {
       ),
     );
   }
+}
+
+// Função para validar EAN-13 e EAN-8 com base no dígito verificador
+bool validarEAN(String codigo) {
+  if (!RegExp(r'^\d+$').hasMatch(codigo)) return false;
+  if (codigo.length != 8 && codigo.length != 13) return false;
+
+  final digits = codigo.split('').map(int.parse).toList();
+  final checkDigit = digits.removeLast();
+
+  int sum = 0;
+  for (int i = 0; i < digits.length; i++) {
+    int weight;
+    if (codigo.length == 13) {
+      weight = (i % 2 == 0) ? 1 : 3;
+    } else {
+      weight = (i % 2 == 0) ? 3 : 1;
+    }
+    sum += digits[i] * weight;
+  }
+
+  int expectedCheckDigit = (10 - (sum % 10)) % 10;
+  return checkDigit == expectedCheckDigit;
 }
